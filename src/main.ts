@@ -44,12 +44,15 @@ let enemies: Record<StageName, ReturnType<StageDefinition["createEnemyPools"]>>
 // This code instantiates the particle system for explosions
 const batchSystem = new Quarks.BatchedParticleRenderer()
 let clock = new THREE.Clock()
+let explosionTime = 0.0
 const loader = new Quarks.QuarksLoader(batchSystem)
 loader.setCrossOrigin("")
 const emitter = await loader.loadAsync("vfx/explosion.json")
 
 // Pause the effect here with webgl.forEachSystem
-forEachSystem(emitter, (obj) => { obj.system.pause() })
+if (clock.oldTime == 0.0){
+    forEachSystem(emitter, (obj) => { obj.system.pause() })
+}
 
 /** The scene object, which contains all visible Three.js objects. */
 const scene = new THREE.Scene().add(
@@ -178,6 +181,7 @@ onUpdate.add((t) => { if (t % updatePerSecond === 0) { getState().countdown() } 
             airplane.userData.autopilotTarget = findMin(aliveEnemies.filter((e) => e.position.x > airplane.position.x + 0.3 && e.userData.name !== "Weather Effect UFO"), (e) => e.position.x)
         }
 
+        batchSystem.update(clock.getDelta())
         // Delete enemies outside of the screen or that are dead
         for (const enemy of aliveEnemies) {
             if (enemy.position.x < -1 || enemy.userData.hp <= 0) {
@@ -185,17 +189,20 @@ onUpdate.add((t) => { if (t % updatePerSecond === 0) { getState().countdown() } 
                     // Instantiate a 3D object for dead enemy. 
                     enemy.userData.onKilled()
 
-                    /* TODO: Move the emitter to enemy.position with `emitter.position.copy(enemy.position)` and play the effect with webgl.forEachSystem here
-                       1. Success but very strange(like motionless instead of animation), maybe some problem in batchSystem.update or it's interrupted by next frame or restart()
-                       2. Also it cannot be shown in multiple objects at the same time
+                    /* TODO:
+                       1. fixed
+                       2. Cannot be shown in multiple objects at the same time
                     */
-                    emitter.position.copy(enemy.position).y
-                    batchSystem.update(clock.getDelta())
-                    forEachSystem(emitter, (obj) => {
-                        if (obj.system.time === 0 || obj.system.time >= obj.system.duration) {
-                            obj.system.restart()
-                        }
-                    })
+                   // hold 2s to play the explosion
+                    if (clock.oldTime - explosionTime >= 2000){
+                        explosionTime = clock.oldTime
+                        emitter.position.copy(enemy.position)
+                        forEachSystem(emitter, (obj) => {
+                            if (obj.system.time === 0 || obj.system.time >= obj.system.duration) {
+                                obj.system.restart()
+                            }
+                        })
+                    }
 
                     // Add possessions of the player.
                     getState().incrementKillCount(enemy.userData.name)
