@@ -186,12 +186,3 @@ export const deleteSaveData = () => {
     store.destroy()
     displayLanguageStore.destroy()
 }
-
-// Send analytics to balance the game 
-if (import.meta.env.VITE_ANALYTICS_ADDR && location.hostname.endsWith(".github.io")) {
-    localStorage.userId ??= randomId()
-    const send = (event?: string) => { fetch(import.meta.env.VITE_ANALYTICS_ADDR ?? "", { method: "POST", body: JSON.stringify({ userId: localStorage.userId, event, ...store.getState() }) }) }  // beacon didn't work
-    setInterval(() => send(), 1000 * 60)
-    send("start")
-    document.addEventListener("visibilitychange", () => { send(document.visibilityState) })
-}
