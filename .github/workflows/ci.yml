@@ -21,6 +21,7 @@ jobs:
       - run: |
           corepack enable
           corepack yarn
+          corepack yarn build
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/main' }}
