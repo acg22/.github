@@ -23,7 +23,7 @@ export const settingsStore = createPersistingStore("acgDOMStore", 4, {
     displayFPSCounter: import.meta.env.DEV,
     sfxVolume: 1,
     bgmVolume: 1,
-    resolutionMultiplier: 1,
+    resolutionMultiplier: Math.SQRT1_2 ** 2, // 0.5
     quality: "standard" as "standard" | "high",
 }, (set, get) => ({
     showNews: (news: constants.NewsName) => { set({ news }) },
