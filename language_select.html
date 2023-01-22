@@ -33,26 +33,29 @@
         uniform vec2 u_resolution;
 
         void main() {
-            float t = u_time*0.6;
-            vec2 uv = (-u_resolution.xy + 2.0 * gl_FragCoord.xy ) / u_resolution.y;
-            float s = 0.0, v = 0.0;
-            uv.x += sin(t) * .1;
-            uv *= mat2(cos(t), sin(t), -sin(t), cos(t));
-            vec3 col = vec3(0.0);
-            vec3 init = vec3(0.25, 0.25 + sin(t) * .2, t * .1);
-            for (int r = 0; r < 100; r++) 
+            int num = 100;
+            float speed = .1, light = .1, bias = .01;
+            float t = u_time * .6;
+            float s = sin(t);
+            float c = cos(t);
+            mat2 rot = mat2(c, -s, s, c);
+            vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution.xy) / u_resolution.y;
+            uv *= rot;
+            vec3 pos = vec3(.1 + c * .8, .1 + s * .3, t * speed);
+            vec3 color = vec3(.0);
+
+            for (int i = 0; i < num; i++, bias += 0.01)
             {
-                vec3 p = init + s * vec3(uv, 0.1);
-                p.z = mod(p.z, 2.0);
-                for (int i=0; i < 10; i++){
-                    p = abs(p * 2.0) / dot(p, p) - 0.75;
+                vec3 p = pos + bias * vec3(uv, .1);
+                for (int j = 0; j < 10; j++) {
+                    p = abs(p * 2.0) / dot(p, p) - .7;
                 }
-                v += length(p * p) * smoothstep(0.0, 0.5, 0.9 - s) * .002;
-                col +=  vec3(v * 0.1, 0.8 - s * 0.5, .7 + v * 0.1) * v * 0.01;
-                s += .01;
+                light += length(p * p) * smoothstep(.0, .5, .9 - bias) * .001;
+                color += vec3(light * .4, .5 - bias * .3, .7 + light * .3) * .015 * light;
             }
-            color_out = vec4(col, 1.0);
+            color_out = vec4(color, 1.0);
         }
+
     </script>
 
     <script type="text/javascript">
