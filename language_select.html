@@ -34,25 +34,23 @@
 
         void main() {
             int num = 100;
-            float speed = .1, light = .1, bias = .01;
+            float speed = .1, light = .0, bias = .0;
             float t = u_time * .6;
-            float s = sin(t);
-            float c = cos(t);
+            float s = sin(t), c = cos(t);
             mat2 rot = mat2(c, -s, s, c);
             vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution.xy) / u_resolution.y;
             uv += vec2(s, c) * .3;
             uv *= rot;
             vec3 pos = vec3(.1 + c * .8, .1 + s * .3, mod(t, 10.0) * speed);
             vec3 color = vec3(.0);
-
             for (int i = 0; i < num; i++, bias += 0.01)
             {
                 vec3 p = pos + bias * vec3(uv, .1);
                 for (int j = 0; j < 10; j++) {
                     p = abs(p * 2.0) / dot(p, p) - .7;
                 }
-                light += dot(p, p) * smoothstep(.3, .5, 1.5 - bias) * .001;
-                color += vec3(light * .2, .5 - bias * .3, .7 + light * .3) * .015 * light;
+                light += dot(p, p);
+                color += vec3(.1, .1, .3) * .00003 * light;
             }
             color_out = vec4(color, 1.0);
         }
