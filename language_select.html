@@ -40,8 +40,9 @@
             float c = cos(t);
             mat2 rot = mat2(c, -s, s, c);
             vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution.xy) / u_resolution.y;
+            uv += vec2(s, c) * .3;
             uv *= rot;
-            vec3 pos = vec3(.1 + c * .8, .1 + s * .3, t * speed);
+            vec3 pos = vec3(.1 + c * .8, .1 + s * .3, mod(t, 10.0) * speed);
             vec3 color = vec3(.0);
 
             for (int i = 0; i < num; i++, bias += 0.01)
@@ -50,8 +51,8 @@
                 for (int j = 0; j < 10; j++) {
                     p = abs(p * 2.0) / dot(p, p) - .7;
                 }
-                light += length(p * p) * smoothstep(.0, .5, .9 - bias) * .001;
-                color += vec3(light * .4, .5 - bias * .3, .7 + light * .3) * .015 * light;
+                light += dot(p, p) * smoothstep(.3, .5, 1.5 - bias) * .001;
+                color += vec3(light * .2, .5 - bias * .3, .7 + light * .3) * .015 * light;
             }
             color_out = vec4(color, 1.0);
         }
